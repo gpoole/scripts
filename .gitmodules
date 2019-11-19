@@ -1,0 +1,3 @@
+[submodule "git-pusheen"]
+	path = git-pusheen
+	url = https://github.com/Lit0r/pusheen-push.git

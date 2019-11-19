@@ -1,0 +1,104 @@
+#!/bin/bash
+set -e
+
+# Creates animated gif images from video files by splicing a section out of the video file at the given framerate
+# and dimensions using ffmpeg, gifscile and imagemagick.
+
+# video gif start_time duration framerate [width height]
+
+function usage() {
+	echo "Usage: `basename $0` in_file out_file -s start_time -t duration -f out_framerate [-d widthxheight]"
+	echo
+	echo "Convert an input video file to an animted gif"
+	echo
+	echo "  in_file:       Source video file (to feed through ffmpeg)"
+	echo "  out_file:      Output gif file"
+	echo "  -s:            Timecode to splice from (following ffmpeg timecode format: hh:mm:ss.mmm)"
+	echo "  -t:            Duration to splice to from start_time, in seconds (e.g. '0.5' for half a second)"
+	echo "  -f:            Framerate for output gif (e.g. '25' for 25fps, defaults to '10')"
+	echo "  -d:            Dimensions (in pixels) of the output gif (optional)"
+  echo "  -h:            Help"
+	exit
+}
+
+# defaults
+framerate=10
+
+OPTERR=0
+while getopts "hs:t:f:d:" opt; do
+  case $opt in
+    h)
+      usage
+      exit
+      ;;
+    s)
+      start_time=$OPTARG
+      ;;
+    t)
+      duration=$OPTARG
+      ;;
+    f)
+      framerate=$OPTARG
+      ;;
+    d)
+      dimensions=$OPTARG
+      ;;
+    \?)
+      usage
+      exit 1
+    ;;
+  esac
+done
+
+# Clear processed options
+shift $((OPTIND-1))
+# Working directory for intermediate files (individual frames etc)
+working=/tmp/convert-$RANDOM
+
+in_file="$1"
+out_file="$2"
+
+# start_time
+if ! [ -z "$start_time" ]; then
+  args="$args -ss $start_time"
+fi
+
+# duration
+if ! [ -z "$duration" ]; then
+  args="$args -t $duration"
+fi
+
+# framerate
+if ! [ -z "$framerate" ]; then
+  args="$args -r $framerate"
+fi
+
+# dimensions
+if [ ! -z "$dimensions" ]; then
+	args="$args -s ${dimensions}"
+fi
+
+mkdir -p $working
+
+echo "Converting to frames..."
+ffmpeg -hide_banner -loglevel error -i "$in_file" $args $working/output%05d.png
+
+echo "Processing frames..."
+frame_count=`ls $working/*.png | wc -l | tr -d '[:space:]'`
+cur_frame=0
+for file in $working/*.png; do
+  echo "Processed $cur_frame of $frame_count"
+	convert $file -layers OptimizePlus -alpha remove -quality 100% +dither $working/`basename $file .png`.gif
+  cur_frame=$((cur_frame + 1))
+  tput cuu 1
+  tput el
+done
+
+echo "Encoding gif..."
+delay=$(printf "%.0f\n" `bc -l <<< "scale = 10; 100/$5"`)
+gifsicle --loopcount=forever --colors 256 --delay $delay $working/*.gif > "$out_file"
+
+echo "Cleaning up..."
+rm -Rf $working
+
+echo "Done!"

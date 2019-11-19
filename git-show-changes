@@ -1,0 +1,7 @@
+if [ -z "$1" ]; then
+    echo "Usage: git show-changes commit"
+    exit 1
+fi
+COMMIT=$1
+shift
+git diff $COMMIT^1 $COMMIT --summary $@
