@@ -1,0 +1,12 @@
+BRANCH="$1"
+if [ -z "$BRANCH" ]; then
+  BRANCH=`git rev-parse --abbrev-ref HEAD`
+fi
+read -p "Close branch $BRANCH? (y/N)" CONFIRM
+if ! [ "$CONFIRM" == "y" ] && ! [ "$CONFIRM" == "Y" ]; then
+  echo "Cancelling."
+  exit
+fi
+echo "Closing branch $BRANCH"
+git branch -d $BRANCH
+git push origin :$BRANCH
