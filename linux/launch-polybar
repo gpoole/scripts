@@ -2,6 +2,10 @@
 
 killall -q polybar
 while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+
+# Designed to work with https://github.com/adi1090x/polybar-themes
+# For the monitor config to work the main bar config needs the following added:
+# monitor = ${env:MONITOR}
 for m in $(polybar --list-monitors | cut -d":" -f1); do
     PATH=~/.config/polybar/scripts:$PATH MONITOR=$m polybar -c ~/.config/polybar/config.ini main &
 done
