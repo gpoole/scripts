@@ -1,0 +1,12 @@
+bucket=$1
+
+if [ -z "$bucket" ]; then
+  echo "Usage: mount-s3 bucket-name"
+  exit 1
+fi
+
+mountpoint="$HOME/.mount/s3/$bucket"
+mkdir -p "$mountpoint"
+s3fs "$bucket" "$mountpoint" -o passwd_file=$HOME/.passwd-s3fs
+echo "Mounted at $mountpoint"
+thunar "$mountpoint"
