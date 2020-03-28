@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function usage() {
+	echo "Usage: ssh-copy-id-root user@host" >&2
+}
+
+if [ -z "$1" ]; then
+	usage
+	exit 1
+fi
+
+pubkey=$(cat ~/.ssh/id_rsa.pub)
+
+cmd=$(cat << SH
+	mkdir -p /root/.ssh
+	echo "$pubkey" >> /root/.ssh/authorized_keys
+	chmod -R og= /root/.ssh/
+	chmod u=rw /root/.ssh/authorized_keys
+	chmod u=rwx /root/.ssh/
+	sed -i '/^PermitRootLogin/d' /etc/ssh/sshd_config
+	echo -e "\nPermitRootLogin yes" >> /etc/ssh/sshd_config
+	systemctl restart sshd
+	echo "Finished installing key. You can now set 'PasswordAuthentication no' in sshd_config."
+SH
+)
+
+echo "Connecting to server..."
+ssh -t "$1" -C "sudo bash -c '$cmd'"
