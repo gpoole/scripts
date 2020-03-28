@@ -1,0 +1,4 @@
+NAME=$HOME/Desktop/Screenshot-`date +%Y%m%d_%H%M%S`.png
+gm import $NAME
+notify-send.sh -t 5000 -i $NAME -o "View:xdg-open $NAME" "Screenshot saved to $NAME"
+xclip -selection clipboard -t "image/png" < $NAME
