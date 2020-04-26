@@ -1,9 +1,10 @@
-#!/bin/bash -x
+#!/bin/bash
 
 desktop_env="default"
+exclude_displays=()
 
 OPTERR=0
-while getopts "hd:" opt; do
+while getopts "hd:e:" opt; do
   case $opt in
     h)
       usage
@@ -11,6 +12,9 @@ while getopts "hd:" opt; do
       ;;
     d)
       desktop_env=$OPTARG
+      ;;
+    e)
+      exclude_displays+=($OPTARG)
       ;;
     \?)
       usage
@@ -39,7 +43,11 @@ function get-role() {
 # For the monitor config to work the main bar config needs the following added:
 # monitor = ${env:MONITOR}
 for m in $(polybar --list-monitors | cut -d":" -f1); do
-  name=`echo $m | cut -d: -f1`
-  role=`get-role $name`
-  PATH=~/.config/polybar/scripts:$PATH MONITOR=$m MONITOR_ROLE=$role DESKTOP_ENV=$desktop_env polybar -c ~/.config/polybar/config.ini main &
+  if [[ " ${exclude_displays[@]} " =~ " ${m} " ]]; then
+    echo "Ignoring ${m}." >&2
+  else
+    name=`echo $m | cut -d: -f1`
+    role=`get-role $name`
+    PATH=~/.config/polybar/scripts:$PATH MONITOR=$m MONITOR_ROLE=$role DESKTOP_ENV=$desktop_env polybar -c ~/.config/polybar/config.ini main &
+  fi
 done
