@@ -1,0 +1,5 @@
+#/bin/bash
+ip=`curl --silent https://httpbin.org/ip | jq -r .origin`
+echo $ip | xclip -selection clipboard
+notify-send.sh -t 5000 "$ip copied to clipboard."
+
