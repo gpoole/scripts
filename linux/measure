@@ -1,0 +1,5 @@
+NAME=/tmp/measure-$RANDOM.png
+gm import $NAME
+RES=`gm identify $NAME | sed -E 's/.* ([0-9]+x[0-9]+)\+.*/\1/g'`
+notify-send.sh -t 5000 "$RES"
+
