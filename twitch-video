@@ -1,8 +1,17 @@
 #!/bin/bash
 # Modified from https://wiki.archlinux.org/index.php/Streaming_to_twitch.tv for video playback
 
-OUTRES="1920x1080" # output resolution
-# OUTRES="1280x720"
+# Pause: ctrl+z or kill -s SIGSTOP pid
+# Extra opts:
+#   START_TIME=hh:mm:ss.mmm
+#   SUB_FILE=/path/to/file.srt
+#   EMBEDDED_SUBS=true
+
+# OUTRES="1920x1080" # output resolution
+# OUTRES="1920x800"
+# OUTRES="480x360"
+OUTRES="1280x720"
+# OUTRES=624x464"
 FPS="30" # target FPS
 GOP="60" # i-frame interval, should be double of FPS, 
 GOPMIN="30" # min i-frame interval, should be equal to fps, 
@@ -13,8 +22,16 @@ AUDIO_RATE="44100"
 SERVER="live-syd" # twitch server, see https://stream.twitch.tv/ingests/ for list
 VIDEO_SOURCE="$1"
 
-if ! [ -z "$2" ]; then
-  START_TIME="-ss $2"
+if ! [ -z "$START_TIME" ]; then
+  START_TIME="-ss $START_TIME"
+fi
+
+if [ "$EMBEDDED_SUBS" == "true" ]; then
+  SUB_FILE="$VIDEO_SOURCE"
+fi
+
+if ! [ -z "$SUB_FILE" ]; then
+  SUB_ARG="-vf subtitles='$SUB_FILE'"
 fi
 
 if [ -z "$TWITCH_STREAM_KEY"  ]; then
@@ -22,7 +39,8 @@ if [ -z "$TWITCH_STREAM_KEY"  ]; then
   exit 1
 fi
 
-ffmpeg -re $START_TIME -i "$VIDEO_SOURCE" -f flv -ac 2 -ar $AUDIO_RATE \
+ffmpeg -re $START_TIME -i "$VIDEO_SOURCE" $EXTRAS -f flv -ac 2 -ar $AUDIO_RATE \
   -vcodec libx264 -g $GOP -keyint_min $GOPMIN -b:v $CBR -minrate $CBR -maxrate $CBR -pix_fmt yuv420p\
+  $SUB_ARG \
   -s $OUTRES -preset $QUALITY -tune film -acodec aac -threads $THREADS -strict normal \
   -bufsize $CBR "rtmp://$SERVER.twitch.tv/app/$TWITCH_STREAM_KEY"
