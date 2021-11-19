@@ -7,6 +7,6 @@ fi
 
 mountpoint="$HOME/.mount/s3/$bucket"
 mkdir -p "$mountpoint"
-s3fs "$bucket" "$mountpoint" -o passwd_file=$HOME/.passwd-s3fs
+s3fs "$bucket" "$mountpoint" -o passwd_file=$HOME/.passwd-s3fs,use_path_request_style,url=https://s3-ap-southeast-2.amazonaws.com
 echo "Mounted at $mountpoint"
 thunar "$mountpoint"
