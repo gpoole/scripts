@@ -1,0 +1,2 @@
+#/Applications/VLC.app/Contents/MacOS/VLC -v "$1" --sout "#transcode{vcodec=h264,scale=auto,width=1280,height=720,acodec=aac,ab=128,channels=2,samplerate=44100}:std{access=rtmp,mux=ffmpeg{mux=flv},dst=rtmp://192.168.0.6:1935/live/$OWNCAST_KEY}"
+/Applications/VLC.app/Contents/MacOS/VLC -v "$1" --sout "#transcode{vcodec=h264,acodec=aac,ab=128,channels=2,samplerate=44100}:std{access=rtmp,mux=ffmpeg{mux=flv},dst=rtmp://192.168.0.6:1935/live/$OWNCAST_KEY}"

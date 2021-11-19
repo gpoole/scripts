@@ -32,15 +32,12 @@ fi
 
 if ! [ -z "$SUB_FILE" ]; then
   SUB_ARG="-vf subtitles='$SUB_FILE'"
-fi
-
-if [ -z "$TWITCH_STREAM_KEY"  ]; then
-  echo "No TWITCH_STREAM_KEY set."
-  exit 1
+elif ! [ -z "$SHOW_SUBTITLES" ]; then
+  SUB_ARG="-vf \"subtitles=$VIDEO_SOURCE\""
 fi
 
 ffmpeg -re $START_TIME -i "$VIDEO_SOURCE" $EXTRAS -f flv -ac 2 -ar $AUDIO_RATE \
-  -vcodec libx264 -g $GOP -keyint_min $GOPMIN -b:v $CBR -minrate $CBR -maxrate $CBR -pix_fmt yuv420p\
+  -vcodec libx264 -g $GOP -keyint_min $GOPMIN -b:v $CBR -minrate $CBR -maxrate $CBR -pix_fmt yuv420p \
   $SUB_ARG \
   -s $OUTRES -preset $QUALITY -tune film -acodec aac -threads $THREADS -strict normal \
-  -bufsize $CBR "rtmp://$SERVER.twitch.tv/app/$TWITCH_STREAM_KEY"
+  -bufsize $CBR "rtmp://192.168.0.6:1935/live/$OWNCAST_KEY"
